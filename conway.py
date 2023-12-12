@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import sys
+
 import random
 import time
 
@@ -51,18 +51,3 @@ class Conway:
 
 
 		self.table = table_next
-
-
-if len(sys.argv) != 2:
-	print("usage : conway.py x")
-else:
-	dim = int(sys.argv[1])
-
-	game = Conway(dim)
-	game.print_mat()
-
-	while True:
-		game.update()
-		print("-----------------------------------")
-		game.print_mat()
-		time.sleep(0.5)
