@@ -13,6 +13,7 @@ from kivy.config import Config
 from kivy.clock import Clock
 from kivy.graphics import *
 from conway import *
+from kivy.uix.spinner import Spinner
 import threading
 
 kivy.config.Config.set('graphics','resizable', False)
@@ -22,6 +23,8 @@ class SetupScreen(Screen):
     def __init__(self, **kwargs):
         super(SetupScreen, self).__init__(**kwargs)
         layout = BoxLayout(orientation='vertical', spacing=10, padding=40)
+        self.spinner = Spinner(text='Choisissez un mode', values=('iterative', 'thread_one', 'thread_two'), size_hint_y=None, height=40)
+        layout.add_widget(self.spinner)
         self.input_text = TextInput(hint_text='Entrez une valeur', multiline=False, halign='center', size_hint_y=None, height=40)
         layout.add_widget(self.input_text)
         button = Button(text='Suivant', on_press=self.switch_to_second_screen, size_hint_y=None, height=40)
@@ -29,17 +32,17 @@ class SetupScreen(Screen):
         self.add_widget(layout)
 
     def switch_to_second_screen(self, instance):
-        # Récupérer la valeur de l'input
         input_value = self.input_text.text
+        spinner_value = self.spinner.text
 
-        # Accéder au ScreenManager et changer d'écran avec une animation de slide
         app = App.get_running_app()
         app.root.transition = SlideTransition(direction='left')
         
-        # Passer la valeur au deuxième écran
         app.root.get_screen('main_screen').dim = int(input_value)
+        app.root.get_screen('main_screen').compute_mode = spinner_value
 
         app.root.current = 'main_screen'
+
 
 class MainScreen(Screen):
     def __init__(self,**kwargs):
@@ -50,6 +53,7 @@ class MainScreen(Screen):
         self.add_widget(layout)
 
         self.game = None
+        self.compute_mode = "iterative"
 
     def draw_grid(self):
         self.drawing_area.canvas.clear()
@@ -95,24 +99,35 @@ class MainScreen(Screen):
     
 
     def update(self, dt):
+        if self.compute_mode == "iterative":
+            self.game.update_iter()
+        elif self.compute_mode == "thread_one":
+            self.game.update_thread_one()
+        else:
+            pass
 
-        #self.game.update_thread_one()
         self.draw_grid()
 
     def start_update_loop(self):
-        Clock.schedule_interval(self.update, 1)
+        Clock.schedule_interval(self.update, 0.2)
 
     def on_enter(self):
         # on initialise le jeu
         self.game = Conway(self.dim)
 
-        self.start_update_loop()
-        
-        t1 = threading.Thread(target=self.game.thread_two)
-        t2 = threading.Thread(target=self.draw_grid)
+        if self.compute_mode == "iterative":
+            self.game.print_mat()
+            self.start_update_loop()
+        elif self.compute_mode == "thread_one":
+            self.start_update_loop()
+        else:   
+            self.start_update_loop()
+            
+            t1 = threading.Thread(target=self.game.thread_two)
+            t2 = threading.Thread(target=self.draw_grid)
 
-        t1.start()
-        t2.start()
+            t1.start()
+            t2.start()
 
 class Conway_GUI(App):
     def build(self):

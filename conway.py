@@ -113,7 +113,7 @@ class Conway:
 
 		self.barriere.wait()
 		
-		time.sleep(1)
+		time.sleep(0.2)
 		
 		
 		self.thread_target_two(i,y,self.table)
