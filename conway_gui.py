@@ -13,6 +13,7 @@ from kivy.config import Config
 from kivy.clock import Clock
 from kivy.graphics import *
 from conway import *
+import threading
 
 kivy.config.Config.set('graphics','resizable', False)
 
@@ -94,19 +95,24 @@ class MainScreen(Screen):
     
 
     def update(self, dt):
-        self.game.update()
+
+        #self.game.update_thread_one()
         self.draw_grid()
 
     def start_update_loop(self):
-        Clock.schedule_interval(self.update, 0.2)
+        Clock.schedule_interval(self.update, 1)
 
     def on_enter(self):
         # on initialise le jeu
         self.game = Conway(self.dim)
-        self.game.print_mat()
-
 
         self.start_update_loop()
+        
+        t1 = threading.Thread(target=self.game.thread_two)
+        t2 = threading.Thread(target=self.draw_grid)
+
+        t1.start()
+        t2.start()
 
 class Conway_GUI(App):
     def build(self):
